@@ -14,16 +14,7 @@
 *<pre>
 * MODIFICATION HISTORY:
 *
-* Ver   Who     Date     Changes
-* ----- ------  -------- ----------------------------------------------------
-* 1.00a wgr/nm  10/09/10 First release
-* 1.01a nm      03/05/10 Included xpseudo_asm.h instead of xpseudo_asm_gcc.h
-* 1.04a nm      02/05/13 Fixed CR# 696550.
-*		         Added template code for Vendor request.
-* 1.06a kpc		11/11/13 Fixed CR#759458, cacheInvalidate size should be
-*				 ailgned to cache line size.
-* 2.1   kpc    04/28/14 Cleanup and removed unused functions
-* 2.4   vak    04/01/19 Fixed IAR data_alignment warnings
+* Modified starting from xusbps_intr_example.c Ver 2.4
 *</pre>
 ******************************************************************************/
 
@@ -49,6 +40,9 @@ u8 Buffer[MEMORY_SIZE];
 #else
 u8 Buffer[MEMORY_SIZE] ALIGNMENT_CACHELINE;
 #endif
+
+u8 RxBuffer[512];
+u8 RxLength;
 
 /**************************** Type Definitions *******************************/
 
@@ -103,6 +97,20 @@ int main(void)
 				XPAR_XUSBPS_0_DEVICE_ID, XPAR_XUSBPS_0_INTR);
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
+	}
+
+	while (1) {
+		if (RxLength!=0) {
+			// printing received data
+			RxBuffer[RxLength] = '\0';
+			xil_printf("Received:\r\n");
+			xil_printf((char*)RxBuffer);
+			xil_printf("\r\n");
+			// looping back
+			XUsbPs_EpBufferSend(&UsbInstance, 1, RxBuffer, RxLength);
+			xil_printf("Looped back.\r\n");
+			RxLength = 0;
+		}
 	}
 
 	return XST_SUCCESS;
@@ -270,22 +278,7 @@ static int UsbIntrExample(XScuGic *IntcInstancePtr, XUsbPs *UsbInstancePtr,
 	/* Start the USB engine */
 	XUsbPs_Start(UsbInstancePtr);
 
-	/* At this point we wait for the user to plug in the usb plug. This
-	 * will cause the host to send USB packets. Once we received something,
-	 * we clean up and stop the controller.
-	 *
-	 * This will not really work if we want to use the USB storage
-	 * example. What can we do instead?
-	 */
-	while (NumReceivedFrames < 1) {
-		/* NOP */
-	}
-
-
-	/* Set return code to indicate success and fall through to clean-up
-	 * code.
-	 */
-	ReturnStatus = XST_SUCCESS;
+	return XST_SUCCESS;
 
 out:
 	/* Clean up. It's always safe to disable interrupts and clear the
@@ -446,6 +439,8 @@ static void XUsbPs_Ep1EventHandler(void *CallBackRef, u8 EpNum,
 									InavalidateLen);
 		if (XST_SUCCESS == Status) {
 			/* Handle generic device data request. */
+			memcpy(RxBuffer,BufferPtr,BufferLen);
+			RxLength = BufferLen;
 
 			/* Release the buffer. */
 			XUsbPs_EpBufferRelease(Handle);
