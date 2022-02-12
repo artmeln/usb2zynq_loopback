@@ -137,6 +137,8 @@ typedef struct {
 	USB_STD_IF_DESC ifCfg;
 	USB_STD_EP_DESC epCfg1;
 	USB_STD_EP_DESC epCfg2;
+	USB_STD_EP_DESC epCfg3;
+	USB_STD_EP_DESC epCfg4;
 #ifdef __ICCARM__
 }USB_CONFIG;
 #pragma pack(pop)
@@ -150,8 +152,10 @@ typedef struct {
 
 #define USB_ENDPOINT0_MAXP		0x40
 
-#define USB_BULKIN_EP			1
-#define USB_BULKOUT_EP			1
+#define USB_BULKIN_EP1			1
+#define USB_BULKOUT_EP1			1
+#define USB_BULKIN_EP2			2
+#define USB_BULKOUT_EP2			2
 
 #define USB_DEVICE_DESC			0x01
 #define USB_CONFIG_DESC			0x02
@@ -238,24 +242,40 @@ u32 XUsbPs_Ch9SetupCfgDescReply(u8 *BufPtr, u32 BufLen)
 		 USB_INTERFACE_CFG_DESC,	/* bDescriptorType */
 		 0x00,				/* bInterfaceNumber */
 		 0x00,				/* bAlternateSetting */
-		 0x02,				/* bNumEndPoints */
+		 0x04,				/* bNumEndPoints */
 		 0x00,				/* bInterfaceClass */
 		 0x00,				/* bInterfaceSubClass */
 		 0xFF,				/* bInterfaceProtocol */
 		 0x05},				/* iInterface */
 
-		/* Bulk Out Endpoint Config */
+		/* Bulk Out Endpoint1 Config */
 		{sizeof(USB_STD_EP_DESC),	/* bLength */
 		 USB_ENDPOINT_CFG_DESC,		/* bDescriptorType */
-		 0x00 | USB_BULKOUT_EP,		/* bEndpointAddress */
+		 0x00 | USB_BULKOUT_EP1,		/* bEndpointAddress */
 		 0x02,				/* bmAttribute  */
 		 be2les(0x200),			/* wMaxPacketSize */
 		 0x00},				/* bInterval */
 
-		/* Bulk In Endpoint Config */
+		/* Bulk In Endpoint1 Config */
 		{sizeof(USB_STD_EP_DESC),	/* bLength */
 		 USB_ENDPOINT_CFG_DESC,		/* bDescriptorType */
-		 0x80 | USB_BULKIN_EP,		/* bEndpointAddress */
+		 0x80 | USB_BULKIN_EP1,		/* bEndpointAddress */
+		 0x02,				/* bmAttribute  */
+		 be2les(0x200),			/* wMaxPacketSize */
+		 0x00},				/* bInterval */
+
+		/* Bulk Out Endpoint2 Config */
+		{sizeof(USB_STD_EP_DESC),	/* bLength */
+		 USB_ENDPOINT_CFG_DESC,		/* bDescriptorType */
+		 0x00 | USB_BULKOUT_EP2,		/* bEndpointAddress */
+		 0x02,				/* bmAttribute  */
+		 be2les(0x200),			/* wMaxPacketSize */
+		 0x00},				/* bInterval */
+
+		/* Bulk In Endpoint2 Config */
+		{sizeof(USB_STD_EP_DESC),	/* bLength */
+		 USB_ENDPOINT_CFG_DESC,		/* bDescriptorType */
+		 0x80 | USB_BULKIN_EP2,		/* bEndpointAddress */
 		 0x02,				/* bmAttribute  */
 		 be2les(0x200),			/* wMaxPacketSize */
 		 0x00}				/* bInterval */
@@ -376,6 +396,8 @@ void XUsbPs_SetConfiguration(XUsbPs *InstancePtr, int ConfigIdx)
 
 	XUsbPs_EpEnable(InstancePtr, 1, XUSBPS_EP_DIRECTION_OUT);
 	XUsbPs_EpEnable(InstancePtr, 1, XUSBPS_EP_DIRECTION_IN);
+	XUsbPs_EpEnable(InstancePtr, 2, XUSBPS_EP_DIRECTION_OUT);
+	XUsbPs_EpEnable(InstancePtr, 2, XUSBPS_EP_DIRECTION_IN);
 
 	/* Set BULK mode for both directions.  */
 	XUsbPs_SetBits(InstancePtr, XUSBPS_EPCR1_OFFSET,
@@ -383,9 +405,15 @@ void XUsbPs_SetConfiguration(XUsbPs *InstancePtr, int ConfigIdx)
 						XUSBPS_EPCR_RXT_BULK_MASK |
 						XUSBPS_EPCR_TXR_MASK |
 						XUSBPS_EPCR_RXR_MASK);
+	XUsbPs_SetBits(InstancePtr, XUSBPS_EPCR2_OFFSET,
+						XUSBPS_EPCR_TXT_BULK_MASK |
+						XUSBPS_EPCR_RXT_BULK_MASK |
+						XUSBPS_EPCR_TXR_MASK |
+						XUSBPS_EPCR_RXR_MASK);
 
-	/* Prime the OUT endpoint. */
+	/* Prime the OUT endpoints. */
 	XUsbPs_EpPrime(InstancePtr, 1, XUSBPS_EP_DIRECTION_OUT);
+	XUsbPs_EpPrime(InstancePtr, 2, XUSBPS_EP_DIRECTION_OUT);
 }
 
 /****************************************************************************/
