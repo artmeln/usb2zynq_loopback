@@ -5,32 +5,27 @@
 
 /*****************************************************************************/
 /**
- * @file xusbps_ch9_storage.c
+ * @file xusbps_ch9_generic.c
  *
- * This file contains the implementation of the storage specific chapter 9 code
+ * This file contains the implementation of the generic device chapter 9 code
  * for the example.
  *
  *<pre>
  * MODIFICATION HISTORY:
  *
- * Ver   Who  Date     Changes
- * ----- ---- -------- ---------------------------------------------------------
- * 1.00a wgr  10/10/10 First release
- * 2.5	 pm   02/20/20 Added SetConfigurationApp and SetInterfaceHandler API to
- *			make ch9 common framework to all example.
+ * Modified starting from xusbps_ch9_storage.c Ver 2.5
  *</pre>
  ******************************************************************************/
 
 /***************************** Include Files *********************************/
 
+#include "xusbps_ch9_generic.h"
+
 #include <string.h>
 
 #include "xparameters.h"	/* XPAR parameters */
-#include "xusbps.h"		/* USB controller driver */
 
 #include "xusbps_ch9.h"
-#include "xusbps_ch9_storage.h"
-
 #include "device_descr.h"
 
 /************************** Constant Definitions *****************************/

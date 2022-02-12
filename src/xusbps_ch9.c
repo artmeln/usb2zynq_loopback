@@ -104,10 +104,6 @@ int XUsbPs_Ch9HandleSetupPacket(XUsbPs *InstancePtr,
 		XUsbPs_StdDevReq(InstancePtr, SetupData);
 		break;
 
-	case XUSBPS_CMD_CLASSREQ:
-		XUsbPs_ClassReq(InstancePtr, SetupData);
-		break;
-
 	case XUSBPS_CMD_VENDREQ:
 
 #ifdef CH9_DEBUG

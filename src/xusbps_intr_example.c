@@ -33,7 +33,6 @@
 #include "xusbps.h"			/* USB controller driver */
 #include "xscugic.h"
 #include "xusbps_ch9.h"		/* Generic Chapter 9 handling code */
-#include "xusbps_class_storage.h"	/* Storage class handling code */
 #include "xil_exception.h"
 #include "xpseudo_asm.h"
 #include "xreg_cortexa9.h"
@@ -446,9 +445,8 @@ static void XUsbPs_Ep1EventHandler(void *CallBackRef, u8 EpNum,
 		Xil_DCacheInvalidateRange((unsigned int)BufferPtr,
 									InavalidateLen);
 		if (XST_SUCCESS == Status) {
-			/* Handle the storage class request. */
-			XUsbPs_HandleStorageReq(InstancePtr, EpNum,
-							BufferPtr, BufferLen);
+			/* Handle generic device data request. */
+
 			/* Release the buffer. */
 			XUsbPs_EpBufferRelease(Handle);
 		}
