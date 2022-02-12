@@ -31,6 +31,8 @@
 #include "xusbps_ch9.h"
 #include "xusbps_ch9_storage.h"
 
+#include "device_descr.h"
+
 /************************** Constant Definitions *****************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
@@ -182,9 +184,9 @@ u32 XUsbPs_Ch9SetupDevDescReply(u8 *BufPtr, u32 BufLen)
 		sizeof(USB_STD_DEV_DESC),	/* bLength */
 		USB_DEVICE_DESC,		/* bDescriptorType */
 		be2les(0x0200),			/* bcdUSB 2.0 */
-		0x00,				/* bDeviceClass */
-		0x00,				/* bDeviceSubClass */
-		0x00,				/* bDeviceProtocol */
+		0xFF,				/* bDeviceClass */
+		0xFF,				/* bDeviceSubClass */
+		0xFF,				/* bDeviceProtocol */
 		USB_ENDPOINT0_MAXP,		/* bMaxPackedSize0 */
 		be2les(0x0d7d),			/* idVendor */
 		be2les(0x0100),			/* idProduct */
@@ -242,9 +244,9 @@ u32 XUsbPs_Ch9SetupCfgDescReply(u8 *BufPtr, u32 BufLen)
 		 0x00,				/* bInterfaceNumber */
 		 0x00,				/* bAlternateSetting */
 		 0x02,				/* bNumEndPoints */
-		 0x08,				/* bInterfaceClass */
-		 0x06,				/* bInterfaceSubClass */
-		 0x50,				/* bInterfaceProtocol */
+		 0x00,				/* bInterfaceClass */
+		 0x00,				/* bInterfaceSubClass */
+		 0xFF,				/* bInterfaceProtocol */
 		 0x05},				/* iInterface */
 
 		/* Bulk Out Endpoint Config */
@@ -300,8 +302,8 @@ u32 XUsbPs_Ch9SetupStrDescReply(u8 *BufPtr, u32 BufLen, u8 Index)
 
 	static char *StringList[] = {
 		"UNUSED",
-		"Xilinx",
-		"EPB USB Flash Drive Disk Emulation",
+		MANUFACTURER_NAME,
+		DEVICE_NAME,
 		"2A49876D9CC1AA4",
 		"Default Configuration",
 		"Default Interface",
