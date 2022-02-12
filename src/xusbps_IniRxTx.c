@@ -20,8 +20,9 @@
 
 /***************************** Include Files *********************************/
 
+#include "xusbps_IniRxTx.h"
+
 #include "xparameters.h"		/* XPAR parameters */
-#include "xusbps.h"			/* USB controller driver */
 #include "xscugic.h"
 #include "xusbps_ch9.h"		/* Generic Chapter 9 handling code */
 #include "xil_exception.h"
@@ -66,7 +67,6 @@ static int UsbSetupIntrSystem(XScuGic *IntcInstancePtr,
 			      XUsbPs *UsbInstancePtr, u16 UsbIntrId);
 static void UsbDisableIntrSystem(XScuGic *IntcInstancePtr, u16 UsbIntrId);
 
-
 /************************** Variable Definitions *****************************/
 
 /* The instances to support the device drivers are global such that the
@@ -78,57 +78,38 @@ static XUsbPs UsbInstance;	/* The instance of the USB Controller */
 static volatile int NumIrqs = 0;
 static volatile int NumReceivedFrames = 0;
 
-
+/******************************************************************************/
+// 	Functions that allow access to Rx buffers and to Usb device setup
 /*****************************************************************************/
-/**
- *
- * Main function to call the USB interrupt example.
- *
- * @param	None
- *
- * @return
- * 		- XST_SUCCESS if successful
- * 		- XST_FAILURE on error
- *
- ******************************************************************************/
+int SetupUsbDevice() {
+	return UsbIntrExample(&IntcInstance, &UsbInstance,
+			XPAR_XUSBPS_0_DEVICE_ID, XPAR_XUSBPS_0_INTR);
+}
 
-int main(void)
-{
-	int Status;
+void ReadFromEp1(u8** pBuffer, u8* length) {
+	*pBuffer = RxBufferEp1;
+	*length = RxLengthEp1;
+}
 
-	/* Run the USB Interrupt example.*/
-	Status = UsbIntrExample(&IntcInstance, &UsbInstance,
-				XPAR_XUSBPS_0_DEVICE_ID, XPAR_XUSBPS_0_INTR);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
+void ReadFromEp2(u8** pBuffer, u8* length) {
+	*pBuffer = RxBufferEp2;
+	*length = RxLengthEp2;
+}
 
-	while (1) {
-		if (RxLengthEp1!=0) {
-			// printing received data
-			RxBufferEp1[RxLengthEp1] = '\0';
-			xil_printf("Received:\r\n");
-			xil_printf((char*)RxBufferEp1);
-			xil_printf("\r\n");
-			// looping back
-			XUsbPs_EpBufferSend(&UsbInstance, 1, RxBufferEp1, RxLengthEp1);
-			xil_printf("Looped back.\r\n");
-			RxLengthEp1 = 0;
-		}
-		if (RxLengthEp2!=0) {
-			// printing received data
-			RxBufferEp2[RxLengthEp2] = '\0';
-			xil_printf("Received:\r\n");
-			xil_printf((char*)RxBufferEp2);
-			xil_printf("\r\n");
-			// looping back
-			XUsbPs_EpBufferSend(&UsbInstance, 2, RxBufferEp2, RxLengthEp2);
-			xil_printf("Looped back.\r\n");
-			RxLengthEp2 = 0;
-		}
-	}
+void ResetRxBufferEp1() {
+	RxLengthEp1 = 0;
+}
 
-	return XST_SUCCESS;
+void ResetRxBufferEp2() {
+	RxLengthEp2 = 0;
+}
+
+int SendToEp1(u8* buff, u8 length) {
+	return XUsbPs_EpBufferSend(&UsbInstance, 1, buff, length);
+}
+
+int SendToEp2(u8* buff, u8 length) {
+	return XUsbPs_EpBufferSend(&UsbInstance, 2, buff, length);
 }
 
 /*****************************************************************************/
