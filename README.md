@@ -3,4 +3,4 @@ This repository documents conversion of the mass storage USB2 device example (pr
 
 It should be easy, however, to convert this project to run on a different Zynq family board, as long as USB device mode is realized on your specific hardware. Start with a ‘Hello world’ Vivado example for the board that you have and make sure that USB0 is enabled among the peripheries. Follow through the example and build the hardware specification (.xsa) file. Then open Xilinx Vitis, create a new application using your XSA file, and then choose the ‘Hello world’ project as your template. Then replace the source files with the source files from the loopback project.
 
-You can test yuor device with TestUsb2Loopback repo
+You can test your device with TestUsb2Loopback repo
